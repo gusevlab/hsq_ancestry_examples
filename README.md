@@ -27,3 +27,9 @@ Toy simulations and analyses of heritability and genetic differences
 `fst_bounds.R` : Sampling and visualizing the bound on Fst estimates
 
 `fst_qst.R` : Visualizing the relationship between Fst and heritable trait differences
+
+`polygenic_selection_simulation.R` : Visualizing the allele frequency spectrum change over generations of selection.
+
+`fitness_environment.R` : Visualizing a shift in the fitness optimum or environment under stabilizing selection.
+
+`breeders_eqn.R` : Visualizing the response to long term selection and the Breeder's Equation.

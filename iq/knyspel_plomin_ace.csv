@@ -1,0 +1,15 @@
+﻿Measure,Loadings,Network_A,Network_C,Network_E,Factor_A,Factor_C,Factor_E,Measure_Name
+Rav,0.610,0.368,0.134,0.500,0.431,0.327,0.281,Raven's standard and advanced progressive matrices
+Pic,0.455,0.340,0.168,0.493,0.301,0.334,0.151,WISC-III-UK picture completion test
+Voc,0.660,0.374,0.124,0.504,0.583,0.338,0.073,WISC-III-PI multiple choice vocabulary subtest
+Gen,0.626,0.383,0.237,0.383,0.533,0.321,0.117,WISC-III-PI multiple choice information (general knowledge) subtest
+PIAT,0.721,0.399,0.189,0.414,0.669,0.253,0.129,Peabody Individual Achievement Test
+GOAL,0.685,0.310,0.165,0.527,0.592,0.281,0.179,GOAL formative assessment in literacy for key stage 3
+Flu,0.476,0.634,0.084,0.284,0.686,-0.247,0.012,Woodcock-Johnson III reading fluency test
+TOWRE,0.501,0.718,0.053,0.233,0.684,-0.221,0.053,Test of Word Reading Efficiency Form B
+Und,0.768,0.441,0.172,0.389,0.547,0.265,0.595,UK national curriculum derived test of understanding numbers
+Non,0.713,0.373,0.185,0.444,0.468,0.339,0.497,UK national curriculum derived test of non-numerical processing
+Com,0.697,0.462,0.104,0.437,0.491,0.208,0.578,UK national curriculum derived test of computation and mathematical knowledge
+TOAL,0.598,0.328,0.132,0.542,0.494,0.278,0.164,Test of Adolescent and Adult Language listening grammar subtest
+Fig,0.657,0.359,0.192,0.451,0.596,0.338,0.037,Test of language competence figurative language subtest
+Inf,0.572,0.235,0.187,0.579,0.491,0.327,0.058,Test of language competence making inferences subtest

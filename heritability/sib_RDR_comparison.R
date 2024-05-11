@@ -129,7 +129,7 @@ for ( s in 1:seeds ) {
     mate1_hap_a = child1_hap_a
     mate1_hap_b = child1_hap_b
     mate2_hap_a = child2_hap_a
-    mate2_hap_a = child2_hap_b
+    mate2_hap_b = child2_hap_b
   }
   }
   ### ----

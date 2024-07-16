@@ -157,7 +157,7 @@ LM ~~ VPA
 DSS ~~ SS
 DSB ~~ LNS'
 
-EduGandS_new.fit <- cfa(new_model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+EduGandS_new.fit <- cfa(EduGandS_new.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
 cat ("dAIC Only S vs. G and S (updated)" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS_new.fit,"aic") , '\n' )
 ```
 
@@ -169,7 +169,7 @@ lavaanPlot( model = EduGandS_new.fit , coefs=T , stand=T )
 There's a significant positive path from Edu to g, and a negative path from Edu to SpSp. Let's look at the stanardized coefficients:
 
 ```{r}
-standardizedSolution(EduGandS.fit)
+standardizedSolution(EduGandS_new.fit)
 ```
 
 ## Sensitivity analysis: Remove SpSp entirely from the analysis

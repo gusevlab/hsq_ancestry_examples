@@ -1,5 +1,5 @@
 ---
-title: "Re-analysis of Ritchie, Bates, Deary et al."
+title: "Re-analysis of Ritchie, Bates, Deary : Is Education Associated With Improvements in General Cognitive Ability, or in Specific Skills?"
 output: github_document
 date: "`r Sys.Date()`"
 ---
@@ -28,10 +28,12 @@ input_mat = '
 0.67	0.39	0.46	0.49	0.58	0.51	0.35	0.53	0.51	0.4	0.36	1'
 input_names = c("Age11_MHT","Edu","LM","DSS","MR","BD","VPA","SS","LNS","DSB","SpSp","Age70_MHT")
 cor_mat = getCov(input_mat, names = input_names, lower=T, diag=T  )
-ntotal = 1028
+ntotal = 1091
 ```
 
 ## Fit and confirm the published models
+
+The set up of the published models:
 
 "*Using modification indexes calculated in Mplus, we found five residual covariances that were significant in the baseline model. Four of these described clear content overlap in the tests (between Matrix Reasoning and Block Design, Logical Memory and Verbal Paired Associates, Digit-Symbol and Symbol Search, Digit Span Backwards and Letter-Number Sequencing) and one was unexpectedly negative (between the MHT and Spatial Span).*"
 
@@ -68,35 +70,63 @@ DSB ~~ LNS
 Age70_MHT ~~ SpSp'
 
 EduOnlyG.fit <- cfa(EduOnlyG.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T )
-EduOnlyS.fit <- cfa(EduOnlyS.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T )
 EduGandS.fit <- cfa(EduGandS.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T )
+EduOnlyS.fit <- cfa(EduOnlyS.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T )
 
-cat("Model 1" , fitMeasures(EduOnlyG.fit,c("rmsea","aic")),'\n')
-cat("Model 2" , fitMeasures(EduGandS.fit,c("rmsea","aic")),'\n')
-cat("Model 3" , fitMeasures(EduOnlyS.fit,c("rmsea","aic")),'\n')
+cat("Model 1 RMSEA and AIC" , fitMeasures(EduOnlyG.fit,c("rmsea","aic")),'\n')
+cat("Model 2 RMSEA and AIC" , fitMeasures(EduGandS.fit,c("rmsea","aic")),'\n')
+cat("Model 3 RMSEA and AIC" , fitMeasures(EduOnlyS.fit,c("rmsea","aic")),'\n')
 
-cat ("dAIC Only S vs. G and S" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS.fit,"aic") , '\n' )
-cat ("dAIC Only S vs. Only G" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduOnlyG.fit,"aic") , '\n' )
+cat ("delta AIC: Only S vs. G and S" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS.fit,"aic") , '\n' )
+cat ("delta AIC: Only S vs. Only G" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduOnlyG.fit,"aic") , '\n' )
+
+cat ("delta chisq: Only S vs. G and S" , fitMeasures(EduOnlyS.fit,"chisq") - fitMeasures(EduGandS.fit,"chisq") , '\n' )
+cat ("delta chisq: Only S vs. Only G" , fitMeasures(EduOnlyS.fit,"chisq") - fitMeasures(EduOnlyG.fit,"chisq") , '\n' )
 
 ```
-We confirm the lower (better) AIC for a model with paths only on S compared to a model with paths to g and S, and much lower AIC for a model only on g.
+Replicating the published result (quoted below), the AIC was better (lower) for a model with paths from Edu only to S's compared to a model with paths from Edu to g and S's, and much better than a model with with paths from Edu only on g.
 
-"*We then compared Model C to the previous models. It had significantly better fit than both Model A, ΔAIC = 19.08, χ2(6) = 31.08, p < .001; and Model B, ΔAIC = 9.90, χ2(4) = 17.90, p = .001.*"
+The published results: "*We then compared Model C to the previous models. It had significantly better fit than both Model A, ΔAIC = 19.08, χ2(6) = 31.08, p < .001; and Model B, ΔAIC = 9.90, χ2(4) = 17.90, p = .001.*"
+
+We also see above that the delta chisq statistics match, even though this is not a nested model comparison and the p-values are not valid.
+
+Finally, let's double check that the published g-loadings from Model 1 match the g-loadings we obtained.
+
+```{r}
+
+input_names = c("Age11_MHT","Edu","LM","DSS","MR","BD","VPA","SS","LNS","DSB","SpSp","Age70_MHT")
+published_g_loadings = c(0.85, 0.67, 0.66, 0.66, 0.63, 0.59, 0.55, 0.53, 0.52, 0.43)
+published_g_names = c("Age70_MHT","MR","LNS","SS","BD","DSS","LM","DSB","SpSp","VPA")
+coefs = standardizedSolution(EduOnlyG.fit)
+coefs = coefs[ coefs$op == "=~" , ]
+published_g_loadings = published_g_loadings[ match(coefs$rhs,published_g_names) ]
+cat( "Correlation of g loadings:" , cor( published_g_loadings , coefs$est.std ) )
+plot( published_g_loadings , coefs$est.std , xlab="Published g loadings", ylab="Recovered g loadings",bty="n",xlim=c(0,1),ylim=c(0,1))
+abline(0,1,lty=3,col="gray")
+
+```
 
 ## Plot Model 1 : Only on g
 ```{r}
 lavaanPlot( model = EduOnlyG.fit , coefs=T , stand=T )
 ```
-## Plot Model 2 : On g and s
+
+## Plot Model 2 : On g and specific skills
 ```{r}
 lavaanPlot( model = EduGandS.fit , coefs=T , stand=T )
 ```
-## Plot Model 3 : Only on s
+
+## Plot Model 3 : Only on specific skils
 ```{r}
 lavaanPlot( model = EduOnlyS.fit , coefs=T , stand=T )
 ```
 
-## Do model selection for Model 2
+All models are visually consistent with what's reported in Ritchie et al. We have replicated the findings using the summary correlation matrix. Now let's investigate the fitting of Model 2 (Edu on g and specific skills).
+
+## Do forward model selection for Model 2
+
+Ritchie et al. do not provide information on how Model 2 (Edu on g and S's) was constructed. Let's do simple forward selection where we add paths if they are significant.
+
 ```{r}
 
 # start without the effect of Edu on S
@@ -114,6 +144,7 @@ all_vals = c("LM","DSS","MR","BD","VPA","SS","LNS","DSB","SpSp","Age70_MHT")
 min_p = NA
 included_vals = "g_adult"
 # Iterate until no more significant paths
+ctr = 1
 while( is.na(min_p) | min_p < 0.05 ) {
   # Iterate through all specific tests
   min_p = 1
@@ -131,12 +162,13 @@ while( is.na(min_p) | min_p < 0.05 ) {
   }
   
   # if there's a significant path, add it
-  cat(min_val,min_p,'\n')
+  cat("Iteration" , ctr , "Minimum p-value" , min_p , "for item" , min_val, '\n')
   if ( min_p < 0.05 ) {
+    cat("--- Item" , min_val , "is added\n")
     included_vals = c(included_vals,min_val)
     all_vals = setdiff(all_vals,min_val)
   }
-  cat('\n')
+  ctr = ctr + 1
 }
 
 # print final model
@@ -158,7 +190,9 @@ DSS ~~ SS
 DSB ~~ LNS'
 
 EduGandS_new.fit <- cfa(EduGandS_new.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
-cat ("dAIC Only S vs. G and S (updated)" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS_new.fit,"aic") , '\n' )
+
+cat( "Refit model 2 RMSEA and AIC:" , fitMeasures(EduGandS_new.fit,c("rmsea","aic")), '\n' )
+cat ("delta AIC Only S vs. G and S (with refit paths)" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS_new.fit,"aic") , '\n' )
 ```
 
 The updated model fits better than the model only on S. Let's visualize it:
@@ -166,13 +200,209 @@ The updated model fits better than the model only on S. Let's visualize it:
 ```{r}
 lavaanPlot( model = EduGandS_new.fit , coefs=T , stand=T )
 ```
-There's a significant positive path from Edu to g, and a negative path from Edu to SpSp. Let's look at the stanardized coefficients:
+
+There's a significant positive path from Edu to g, and a negative path from Edu to SpSp.
+Let's look at the stanardized coefficients and also the g ~ Edu coefficient:
 
 ```{r}
-standardizedSolution(EduGandS_new.fit)
+coefs = standardizedSolution(EduGandS_new.fit)
+coefs
+coefs[ coefs$lhs == "g_adult" & coefs$rhs == "Edu" , ]
 ```
 
+The effect of education on adult g is clearly highly significant in this model (Z-score of 6.5).
+
+## Sensitivity analysis: Backward elimination
+
+An alternative to forward selection is to start with all paths and drop the paths that improve model fit. This is how the analysis is described in Ritchie et al:
+
+"*"Finally, for testing the significance of individual paths within the  models, we dropped them from the model (set their path weight to zero)  and tested the significance of the resulting change in model fit, also  using the chi-square test.*"
+
+Unfortunately this approach is not identifiable for the proposed latent variable model: dropping a single path produces identical chi-square statistics because the path can just be accommodated by g.
+
+We can verify this by starting with a model that contains all paths, dropping each in turn, and showing that the chisq is the same:
+
+```{r}
+
+# start without the effect of Edu on S
+
+EduGandS.baseline <- '
+g_adult =~ Age70_MHT + LM + DSS + MR + BD + VPA + SS + LNS + DSB + SpSp
+g_adult + Edu ~ Age11_MHT
+Age70_MHT ~~ SpSp
+MR ~~ BD
+LM ~~ VPA
+DSS ~~ SS
+DSB ~~ LNS'
+
+all_vals = c("LM","DSS","MR","BD","VPA","SS","LNS","DSB","SpSp","Age70_MHT")
+included_vals = all_vals
+
+min_chisq = 1e3
+for ( i in 1:length(all_vals) ) {
+    new_vals = c("g_adult",setdiff(included_vals,all_vals[i]) )
+    eqn = paste(paste(new_vals,collapse=" + ")," ~ Edu",sep='')
+    new_model = paste(EduGandS.baseline,'\n',eqn,sep='')
+    EduGandS.fit <- cfa(new_model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+    cur_chisq = fitMeasures(EduGandS.fit,"chisq")
+    cur_df = fitMeasures(EduGandS.fit,"df")
+    cat( "Dropped" , all_vals[i] , "chisq" , cur_chisq , "df" , cur_df , '\n' )
+}
+```
+
+We thus first have to drop an ad hoc path before we can do backward elimination. Just to see how this works, let's drop Verbal Paired Associations, which had the lowest g-loading in Model 3 (Edu only effects S's).
+
+```{r}
+
+# start without the effect of Edu on S
+
+EduGandS.baseline <- '
+g_adult =~ Age70_MHT + LM + DSS + MR + BD + VPA + SS + LNS + DSB + SpSp
+g_adult + Edu ~ Age11_MHT
+Age70_MHT ~~ SpSp
+MR ~~ BD
+LM ~~ VPA
+DSS ~~ SS
+DSB ~~ LNS'
+
+all_vals = c("LM","DSS","MR","BD","SS","LNS","DSB","SpSp","Age70_MHT")
+included_vals = all_vals
+ctr = 0
+while ( TRUE ) {
+  ctr = ctr + 1
+  cat( "\n# Iteration" , ctr , '\n' )
+  # Fit the baseline model
+  new_vals = c("g_adult",included_vals)
+  eqn = paste(paste(new_vals,collapse=" + ")," ~ Edu",sep='')
+  new_model = paste(EduGandS.baseline,'\n',eqn,sep='')
+  EduGandS.fit <- cfa(new_model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+  prev_chisq = fitMeasures(EduGandS.fit,"chisq")
+  prev_df = fitMeasures(EduGandS.fit,"df")
+  min_chisq = 10e3
+  
+  for ( i in 1:length(included_vals) ) {
+      new_vals = c("g_adult",setdiff(included_vals,included_vals[i]) )
+      eqn = paste(paste(new_vals,collapse=" + ")," ~ Edu",sep='')
+      new_model = paste(EduGandS.baseline,'\n',eqn,sep='')
+      EduGandS.fit <- cfa(new_model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+      cur_chisq = fitMeasures(EduGandS.fit,"chisq")
+      cur_df = fitMeasures(EduGandS.fit,"df")
+      
+      cat( "Consider dropping" , included_vals[i] , "chisq" , cur_chisq , "df" , cur_df , '\n' )
+  
+      if ( cur_chisq < min_chisq ) {
+        min_val = included_vals[i]
+        min_chisq = cur_chisq
+        min_df = cur_df
+      }
+  }
+  
+  # compute the model difference
+  cat( "Previous model chisq" , prev_chisq , prev_df , '\n' )
+  cat( "Lowest model element" , min_val , "chisq" , min_chisq , "df" , min_df , '\n' )
+  pv_diff = pchisq( (min_chisq - prev_chisq) , (min_df - prev_df) , lower.tail=F)
+  cat( "P-value for difference" , pv_diff , '\n' )
+  if ( pv_diff > 0.05 ) {
+    cat( "Dropping" , min_val , '\n' )
+    included_vals = setdiff(included_vals,min_val)
+  } else {
+    break
+  }
+}
+
+# print final model
+cat( "Final specific paths:" , included_vals , '\n' )
+
+```
+
+This model is slightly more complex but still includes LM, SS, and SpSp. Now let's retest this model:
+
+```{r}
+EduGandS_new.model <- '
+g_adult =~ Age70_MHT + LM + DSS + MR + BD + VPA + SS + LNS + DSB + SpSp
+g_adult + Edu ~ Age11_MHT
+g_adult + DSS + LM + LNS + SpSp ~ Edu
+Age70_MHT ~~ SpSp
+MR ~~ BD
+LM ~~ VPA
+DSS ~~ SS
+DSB ~~ LNS'
+
+EduGandS_new.fit <- cfa(EduGandS_new.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+cat ("delta AIC Only S vs. G and S (with refit paths)" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS_new.fit,"aic") , '\n' )
+```
+
+This model still fits better than the model with only effects on S.
+
+What if instead of dropping VPA we dropped SpSp first and then used backward elimination to find paths:
+
+```{r}
+
+# start without the effect of Edu on S
+
+EduGandS.baseline <- '
+g_adult =~ Age70_MHT + LM + DSS + MR + BD + VPA + SS + LNS + DSB + SpSp
+g_adult + Edu ~ Age11_MHT
+Age70_MHT ~~ SpSp
+MR ~~ BD
+LM ~~ VPA
+DSS ~~ SS
+DSB ~~ LNS'
+
+all_vals = c("Age70_MHT","LM","DSS","MR","BD","VPA","SS","LNS","DSB")
+included_vals = all_vals
+ctr = 0
+while ( TRUE ) {
+  ctr = ctr + 1
+  cat( "\n# Iteration" , ctr , '\n' )
+  # Fit the baseline model
+  new_vals = c("g_adult",included_vals)
+  eqn = paste(paste(new_vals,collapse=" + ")," ~ Edu",sep='')
+  new_model = paste(EduGandS.baseline,'\n',eqn,sep='')
+  EduGandS.fit <- cfa(new_model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+  prev_chisq = fitMeasures(EduGandS.fit,"chisq")
+  prev_df = fitMeasures(EduGandS.fit,"df")
+  min_chisq = 10e3
+  
+  for ( i in 1:length(included_vals) ) {
+      new_vals = c("g_adult",setdiff(included_vals,included_vals[i]) )
+      eqn = paste(paste(new_vals,collapse=" + ")," ~ Edu",sep='')
+      new_model = paste(EduGandS.baseline,'\n',eqn,sep='')
+      EduGandS.fit <- cfa(new_model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+      cur_chisq = fitMeasures(EduGandS.fit,"chisq")
+      cur_df = fitMeasures(EduGandS.fit,"df")
+      
+      cat( "Consider dropping" , included_vals[i] , "chisq" , cur_chisq , "df" , cur_df , '\n' )
+  
+      if ( cur_chisq < min_chisq ) {
+        min_val = included_vals[i]
+        min_chisq = cur_chisq
+        min_df = cur_df
+      }
+  }
+  
+  # compute the model difference
+  cat( "Previous model chisq" , prev_chisq , prev_df , '\n' )
+  cat( "Lowest model element" , min_val , "chisq" , min_chisq , "df" , min_df , '\n' )
+  pv_diff = pchisq( (min_chisq - prev_chisq) , (min_df - prev_df) , lower.tail=F)
+  cat( "P-value for difference" , pv_diff , '\n' )
+  if ( pv_diff > 0.05 ) {
+    cat( "Dropping" , min_val , '\n' )
+    included_vals = setdiff(included_vals,min_val)
+  } else {
+    break
+  }
+}
+
+# print final model
+cat( "Final specific paths:" , included_vals , '\n' )
+
+```
+This also does not get us back the Ritchie et al model, as very many paths are retained. Not shown, but there is NO starting configuration that gets you back to a model that only contains DSS and LM paths but no SpSp path. Ritchie et al. must have dropped the SpSp path because it was negative or for ad hoc reasons or used some other model selection approach.
+
 ## Sensitivity analysis: Remove SpSp entirely from the analysis
+
+It is odd that Education has a negative effect on Spatial Span and Spatial Span has a negative covariance with the MHT, so let's remove it entirely from the model and see what happens.
 
 ```{r}
 EduOnlyG.model <- '
@@ -206,11 +436,101 @@ EduOnlyG.fit <- cfa(EduOnlyG.model, sample.cov = cor_mat , sample.nobs = ntotal 
 EduOnlyS.fit <- cfa(EduOnlyS.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T )
 EduGandS.fit <- cfa(EduGandS.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T )
 
-cat("Model 1" , fitMeasures(EduOnlyG.fit,c("rmsea","aic")),'\n')
-cat("Model 2" , fitMeasures(EduGandS.fit,c("rmsea","aic")),'\n')
-cat("Model 3" , fitMeasures(EduOnlyS.fit,c("rmsea","aic")),'\n')
+cat("Model 1 RMSEA and AIC" , fitMeasures(EduOnlyG.fit,c("rmsea","aic")),'\n')
+cat("Model 2 RMSEA and AIC" , fitMeasures(EduGandS.fit,c("rmsea","aic")),'\n')
+cat("Model 3 RMSEA and AIC" , fitMeasures(EduOnlyS.fit,c("rmsea","aic")),'\n')
 
-fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS.fit,"aic")
-fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduOnlyG.fit,"aic")
+cat ("delta AIC: Only S vs. G and S" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduGandS.fit,"aic") , '\n' )
+cat ("delta AIC: Only S vs. Only G" , fitMeasures(EduOnlyS.fit,"aic") - fitMeasures(EduOnlyG.fit,"aic") , '\n' )
+
 ```
-The model with Edu paths to g and S still fits better than a model with only paths to S. Moreover, the model with paths only to g now has approximately the same fit as the model with paths only to S. All of the primary results were apparently driven by the inclusion of SpSp.
+The model with Edu paths to g and S still fits better than a model with only paths to S. Moreover, the model with paths only to g now has approximately the same fit as the model with paths only to S (AIC difference of ~1.7). It appears that all of the primary results were driven by the inclusion of SpSp but no paths to SpSp. After removing SpSp and using the models in the paper, there are essentially no differences between the models, though the model with paths to g and S's has the lowest (best) AIC.
+
+## Extra Credit: What about paths from Age 11 IQ?
+
+Just for fun, let's take Model 1 and test for whether there are any paths directly from Age 11 IQ to specific skills. We'll use our forward selection code:
+
+```{r}
+
+# start without the effect of Edu on S
+
+EduGandS.baseline <- '
+g_adult =~ Age70_MHT + LM + DSS + MR + BD + VPA + SS + LNS + DSB + SpSp
+g_adult + Edu ~ Age11_MHT
+g_adult ~ Edu
+Age70_MHT ~~ SpSp
+MR ~~ BD
+LM ~~ VPA
+DSS ~~ SS
+DSB ~~ LNS'
+
+all_vals = c("LM","DSS","MR","BD","VPA","SS","LNS","DSB","SpSp","Age70_MHT")
+min_p = NA
+included_vals = vector()
+# Iterate until no more significant paths
+ctr = 1
+while( is.na(min_p) | min_p < 0.05 ) {
+  # Iterate through all specific tests
+  min_p = 1
+  for ( i in 1:length(all_vals) ) {
+      new_vals = c(included_vals,all_vals[i])
+      eqn = paste(paste(new_vals,collapse=" + ")," ~ Age11_MHT",sep='')
+      new_model = paste(EduGandS.baseline,'\n',eqn,sep='')
+      EduGandS.fit <- cfa(new_model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+      coefs = standardizedSolution(EduGandS.fit)
+      cur_pv = coefs[coefs$lhs == all_vals[i] & coefs$op == "~" & coefs$rhs == "Age11_MHT","pvalue"]
+      if ( cur_pv < min_p ) {
+        min_val = all_vals[i]
+        min_p = cur_pv
+      }
+  }
+  
+  # if there's a significant path, add it
+  cat("Iteration" , ctr , "Minimum p-value" , min_p , "for item" , min_val, '\n')
+  if ( min_p < 0.05 ) {
+    cat("--- Item" , min_val , "is added\n")
+    included_vals = c(included_vals,min_val)
+    all_vals = setdiff(all_vals,min_val)
+  }
+  ctr = ctr + 1
+}
+
+# print final model
+cat( "Final paths from Age11_MHT:" , included_vals , '\n' )
+```
+It looks like multiple paths were selected, let's refit and visualize
+
+```{r}
+
+# start without the effect of Edu on S
+
+Age11_Direct.model <- '
+g_adult =~ Age70_MHT + LM + DSS + MR + BD + VPA + SS + LNS + DSB + SpSp
+g_adult + Edu ~ Age11_MHT
+g_adult ~ Edu
+Age70_MHT + SpSp + DSB + LM ~ Age11_MHT
+Age70_MHT ~~ SpSp
+MR ~~ BD
+LM ~~ VPA
+DSS ~~ SS
+DSB ~~ LNS'
+
+Age11_Direct.fit <- cfa(Age11_Direct.model, sample.cov = cor_mat , sample.nobs = ntotal , std.lv = T)
+lavaanPlot( model = Age11_Direct.fit , coefs=T , stand=T )
+
+```
+
+There are several direct paths from Age 11 IQ to specific skills, including (yet again) a highly negative path to Spatial Span. Let's look at the model fit and compare to prior models and also check that education still influences g:
+
+```{r}
+cat( "Best Ritchie et al. model: Model 3 RMSEA and AIC 0.05784154 29315.55\n",
+     "Best refit/forward selected model: Model 2 RMSEA and AIC: 0.05570367 29311.58\n",
+     "This model RMSEA and AIC" , fitMeasures(Age11_Direct.fit,c("rmsea","aic")) , '\n' )
+
+coefs = standardizedSolution(EduGandS_new.fit)
+coefs[ coefs$lhs == "g_adult" & coefs$rhs == "Edu" , ]
+```
+
+Wow! This model has an even better (lower) AIC and RMSEA than all prior models. And education still has a significant path to adult g.
+
+The interpretation here is that the general factor in old age is influenced by education and Age 11 IQ also influences some specific skills. This is essentially the opposite of the conclusion in Ritchie et al.
